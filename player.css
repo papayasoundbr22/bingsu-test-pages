@@ -1,0 +1,87 @@
+:root {
+  --accent: #f3f2ef;
+  --accent-text: #0c0c0b;
+  /* The bar's fill sits on the video, so it stays light unless a brand sets it. */
+  --player-accent: #ffffff;
+  --radius: 14px;
+  --font: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, Roboto, "Helvetica Neue", Arial, sans-serif;
+  --player-bg: #000000;
+  --player-control: #ffffff;
+}
+.player { position: relative; overflow: hidden; background: var(--player-bg); border-radius: var(--radius); color: var(--player-control); font-family: var(--font); line-height: 1.3; -webkit-tap-highlight-color: transparent; isolation: isolate; }
+.player-video { display: block; width: 100%; height: auto; max-height: 80vh; background: var(--player-bg); object-fit: contain; }
+.player.is-fullscreen { border-radius: 0; }
+.player.is-fullscreen .player-video { width: 100%; height: 100%; max-height: none; }
+.player.is-idle.is-playing { cursor: none; }
+.player-button { touch-action: manipulation; appearance: none; display: inline-grid; place-items: center; flex: none; width: 44px; height: 44px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: inherit; font: 600 14px/1 var(--font); font-variant-numeric: tabular-nums; cursor: pointer; transition: background-color .15s ease; }
+.player-button svg { width: 22px; height: 22px; fill: currentColor; }
+.player-button:hover { background: rgba(255, 255, 255, .14); }
+.player-button:focus-visible, .player-scrub:focus-visible { outline: 2px solid #ffffff; outline-offset: 1px; }
+.player-button[hidden] { display: none; }
+.player-button { position: relative; }
+/* A pressed toggle (captions): a short rule under its icon, not a filled tile. */
+.player-button[aria-pressed="true"]::after { content: ""; position: absolute; left: 50%; bottom: 7px; width: 16px; height: 2px; margin-left: -8px; border-radius: 1px; background: currentColor; }
+.player-big-play { position: absolute; left: 50%; top: 50%; width: 76px; height: 76px; aspect-ratio: 1; flex: none; margin: -38px 0 0 -38px; border-radius: 50%; background: rgba(0, 0, 0, .5); -webkit-backdrop-filter: blur(12px); backdrop-filter: blur(12px); z-index: 2; transition: transform .2s ease, background-color .2s ease, opacity .2s ease; }
+.player-big-play svg { width: 32px; height: 32px; margin-left: 4px; }
+.player-big-play:hover { background: rgba(0, 0, 0, .65); transform: scale(1.04); }
+.player.is-started .player-big-play { opacity: 0; pointer-events: none; }
+.player-controls { position: absolute; left: 0; right: 0; bottom: 0; z-index: 3; padding: 28px 10px 6px; background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgba(0, 0, 0, .62)); transition: opacity .25s ease; }
+.player:not(.is-started) .player-controls { opacity: 0; pointer-events: none; }
+.player.is-idle.is-playing .player-controls { opacity: 0; pointer-events: none; }
+.player-row { display: flex; align-items: center; gap: 2px; }
+.player-spacer { flex: 1; }
+.player-time { padding: 0 8px; font-size: 13px; font-variant-numeric: tabular-nums; white-space: nowrap; opacity: .92; }
+.player-speed { width: auto; min-width: 44px; padding: 0 8px; }
+.player-scrub { position: relative; height: 24px; margin: 0 8px; display: flex; align-items: center; cursor: pointer; touch-action: none; border-radius: 4px; }
+.player-scrub-track { position: relative; width: 100%; height: 4px; border-radius: 2px; background: rgba(255, 255, 255, .28); transition: height .15s ease; }
+.player-scrub:hover .player-scrub-track, .player.is-scrubbing .player-scrub-track { height: 6px; }
+.player-scrub-buffered, .player-scrub-played { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: inherit; }
+.player-scrub-buffered { background: rgba(255, 255, 255, .38); }
+.player-scrub-played { background: var(--player-accent); }
+.player-scrub-note { position: absolute; top: 50%; width: 6px; height: 6px; margin: -3px 0 0 -3px; border-radius: 50%; background: var(--player-accent); box-shadow: 0 0 0 1.5px rgba(0, 0, 0, .55); pointer-events: none; }
+.player-scrub-tick { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--player-bg); }
+.player-scrub-thumb { position: absolute; top: 50%; left: 0; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0, 0, 0, .4); transform: scale(0); transition: transform .15s ease; }
+.player-scrub:hover .player-scrub-thumb, .player.is-scrubbing .player-scrub-thumb, .player-scrub:focus-visible .player-scrub-thumb, .player-scrub:focus .player-scrub-thumb { transform: scale(1); }
+.player-scrub-tip { position: absolute; bottom: 26px; left: 0; max-width: 260px; overflow: hidden; text-overflow: ellipsis; padding: 3px 7px; border-radius: 6px; background: rgba(0, 0, 0, .82); font-size: 12px; font-variant-numeric: tabular-nums; transform: translateX(-50%); opacity: 0; pointer-events: none; transition: opacity .12s ease; white-space: nowrap; }
+.player-scrub:hover .player-scrub-tip, .player.is-scrubbing .player-scrub-tip { opacity: 1; }
+@media (hover: none) { .player-scrub-tip { display: none; } .player-scrub-thumb { transform: scale(1); } }
+.player-captions { position: absolute; left: 50%; bottom: 96px; z-index: 2; max-width: min(86%, 900px); padding: 4px 10px; border-radius: 6px; background: rgba(0, 0, 0, .74); color: #fff; font-size: clamp(14px, 1.6vw, 20px); line-height: 1.35; text-align: center; transform: translateX(-50%); white-space: pre-line; transition: bottom .25s ease; }
+.player-captions[hidden] { display: none; }
+.player.is-idle.is-playing .player-captions { bottom: 20px; }
+.player:not(.is-started) .player-captions { display: none; }
+.player-message { position: absolute; left: 50%; top: 50%; z-index: 4; max-width: 80%; padding: 10px 14px; border-radius: 10px; background: rgba(0, 0, 0, .78); color: #fff; font-size: 15px; text-align: center; transform: translate(-50%, -50%); }
+.player-message[hidden] { display: none; }
+/* A drawing above the words when the video cannot play here (docs/design/illustrations.md). */
+.player-message[data-art] { padding: 18px 22px 14px; }
+.player-message[data-art]::before { content: ""; display: block; width: 64px; height: 64px; margin: 0 auto 10px; background: url(art-bingsu.webp) center / contain no-repeat; opacity: .85; }
+/* Nothing to play: the play button would show through the drawing. */
+.player:has(.player-message[data-art]:not([hidden])) .player-big-play { opacity: 0; pointer-events: none; }
+.player.is-waiting.is-started .player-big-play { opacity: 0; }
+@media (max-width: 480px) { .player-time { font-size: 12px; padding: 0 4px; } .player-row .player-button { width: 40px; } .player-row .player-speed { width: auto; min-width: 40px; } .player-row .player-button.player-big-play, .player-big-play { width: 64px; height: 64px; margin: -32px 0 0 -32px; } .player-message[data-art]::before { width: 48px; height: 48px; margin-bottom: 6px; } }
+@media (prefers-reduced-motion: reduce) { .player *, .player { transition: none !important; } }
+/* An encrypted share before it opens: its passcode, or why it cannot open here. Every template gets it, so each value has a fallback. */
+main.share-lock { box-sizing: border-box; display: block; max-width: var(--max, 1200px); min-height: 100vh; min-height: 100dvh; margin: 0 auto; padding: clamp(40px, 9vh, 96px) 24px 72px; color: var(--text, #f3f2ef); font: 16px/1.5 var(--font); }
+main.share-lock[hidden] { display: none; }
+.share-lock-box { width: 100%; max-width: 400px; }
+.share-lock .share-lock-heading { margin: 0 0 40px; font-size: clamp(28px, 3.4vw, 44px); line-height: 1.1; font-weight: 700; letter-spacing: -.025em; }
+.share-lock .share-lock-title { margin: 0; padding: 0; border: 0; color: inherit; font-size: 20px; line-height: 1.3; font-weight: 650; letter-spacing: -.01em; text-transform: none; text-wrap: balance; }
+.share-lock .share-lock-text { margin: 6px 0 0; color: var(--muted, #a3a29c); font-size: 15px; text-wrap: pretty; }
+.share-lock .share-lock-text[hidden] { display: none; }
+.share-lock-form { margin-top: 20px; }
+.share-lock-input { box-sizing: border-box; display: block; width: 100%; min-height: 48px; padding: 10px 14px; border: 1px solid var(--line, rgba(255, 255, 255, .14)); border-radius: 10px; background: var(--surface, #161615); color: inherit; font: 500 18px/1.3 ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .08em; text-transform: uppercase; }
+/* One 1px ring: the border itself, no outline around it. */
+.share-lock-input:focus { outline: none; border-color: currentColor; }
+.share-lock-error { min-height: 1.5em; margin: 6px 0 2px; color: #ff8589; font-size: 14px; }
+:root[data-theme="light"] .share-lock-error { color: #c4262e; }
+@media (prefers-color-scheme: light) { :root:not([data-theme]) .share-lock-error { color: #c4262e; } }
+.share-lock-open { touch-action: manipulation; display: flex; align-items: center; justify-content: center; width: 100%; min-height: 48px; margin-top: 12px; padding: 0 20px; border: 0; border-radius: 10px; background: var(--accent); color: var(--accent-text); font: 600 16px/1 var(--font); cursor: pointer; transition: opacity .15s ease, transform .1s ease; }
+.share-lock-open:active { transform: scale(.98); }
+.share-lock-open:disabled { opacity: .6; cursor: default; transform: none; }
+.share-lock-open:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.share-provenance { margin: 4px 0 0; color: var(--muted, #a3a29c); font-size: 13px; }
+.share-key { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; letter-spacing: .02em; }
+/* The video cannot play in this browser: the drawing and the words, nothing to press. */
+.player.is-unplayable .player-controls, .player.is-unplayable .player-big-play { display: none; }
+.share-full { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); display: inline-flex; align-items: center; min-height: 48px; padding: 0 22px; border-radius: 999px; background: var(--accent); color: var(--accent-text); font: 600 16px/1 var(--font); text-decoration: none; }
+.share-full:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .share-lock-open { transition: none; } }
