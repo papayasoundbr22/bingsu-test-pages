@@ -312,11 +312,12 @@
     if (choice === 'light' || choice === 'dark') root.setAttribute('data-theme', choice); else root.removeAttribute('data-theme');
   }
   applyTheme(savedTheme());
-  var here = (document.currentScript && document.currentScript.src) || '';
-  var folder = here.replace(/[^\/]*$/, '');
-  var isFile = location.protocol === 'file:';
   /* A one-file share (ShareSingleFile): its sealed files, stub and link travel inside the page. */
   var INLINE = (function () { var el = document.getElementById('bingsu-inline'); try { return el && JSON.parse(el.textContent); } catch (e) { return null; } })();
+  var here = (document.currentScript && document.currentScript.src) || '';
+  // Inline, nothing is fetched: a fixed base names the pieces for hls.js, which may run in about:srcdoc.
+  var folder = INLINE ? 'https://share.invalid/' : here.replace(/[^\/]*$/, '');
+  var isFile = location.protocol === 'file:';
   function inlineBytes(b64) { var s = atob(b64), out = new Uint8Array(s.length); for (var i = 0; i < s.length; i++) out[i] = s.charCodeAt(i); return out; }
   var reduceMotion = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   var RATES = [1, 1.25, 1.5, 2];
@@ -517,7 +518,7 @@
         }
         fallback();
       });
-      hls.loadSource(cfg.playlist);
+      hls.loadSource(INLINE ? folder + cfg.playlist : cfg.playlist);
       hls.attachMedia(video);
       if (started) hls.startLoad();
     }
@@ -1307,7 +1308,7 @@
   }
   SealedLoader.prototype.load = function (context, config, callbacks) {
     // The first playlist comes as written in the page, the rest already resolved.
-    var self = this, stats = this.stats, url = new URL(context.url, location.href).href.split(/[?#]/)[0];
+    var self = this, stats = this.stats, url = new URL(context.url, folder || location.href).href.split(/[?#]/)[0];
     var path = url.indexOf(folder) === 0 ? url.slice(folder.length) : '';
     this.context = context;
     stats.loading.start = performance.now();
@@ -1432,10 +1433,14 @@
     error.id = 'share-passcode-error';
     error.setAttribute('aria-live', 'polite');
     var go = make('button', 'share-lock-open', form);
-    go.type = 'submit';
+    // A click and Enter, not a form submission: an embedded page without allow-forms (a Claude artifact) never submits.
+    go.type = 'button';
     go.textContent = 'Open';
     field.focus();
-    form.addEventListener('submit', function (e) {
+    form.addEventListener('submit', function (e) { e.preventDefault(); });
+    field.addEventListener('keydown', function (e) { if (e.key === 'Enter') open(e); });
+    go.addEventListener('click', open);
+    function open(e) {
       e.preventDefault();
       if (go.disabled) return;
       if (!e2e.normalizePasscode(field.value)) return field.focus();
@@ -1452,7 +1457,7 @@
         field.value = '';
         field.focus();
       });
-    });
+    }
   }
   function reveal(r, lock) {
     var o = r.opened, page = o.page;
